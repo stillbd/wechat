@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>周报编辑</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <link rel="stylesheet" type="text/css" th:href="@{/css/common.css}" />
+
+    <!-- 引入jQuery -->
+    <script th:src="@{/editor/jquery.min.js}"></script>
+    <!-- 引入百度上传插件 -->
+    <script th:src="@{/editor/webuploader.min.js}"></script>
+    <!-- 插件核心 -->
+    <script th:src="@{/editor/Eleditor.js}"></script>
+    <link rel="stylesheet" type="text/css" th:href="@{/editor/layout/base.css}" />
+    <!--引入layer-->
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!--引入bootstrapjs与样式-->
+    <!-- bootstrap -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            -webkit-touch-callout: none;
+            background-color: #fff;
+            line-height: inherit;
+            padding-top: 30px;
+        }
+        #contentEditor{
+            width: 100%;
+            min-height: 300px;
+            box-sizing: border-box;
+            padding: 10px;
+            color: #444;
+        }
+        #contentEditor p{
+            letter-spacing: 0.25px;
+            font: 16px/25px Tahoma, Verdana, 宋体;
+            margin: 20px 0px;
+        }
+        #contentEditor h4 {
+            font-weight: bold;
+            line-height: 1.333em;
+            margin: 10px 0 20px;
+            padding: 25px 0 0;
+        }
+        #contentEditor img{
+            width: 100%;
+            height: auto;
+            box-sizing: border-box;
+        }
+        .dempTip{
+            border-left: 2px solid #00BCD4;
+            padding-left: 5px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        code{
+            white-space: pre-wrap;
+            background: #2D2D2D;
+            display: block;
+            margin: 10px;
+            border-radius: 5px;
+            color: #fff;
+        }
+        .viewTit{
+            color: #FF5722;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 30px;
+            line-height: 30px;
+            font-size: 14px;
+            text-align: center;
+            display: block;
+            width: 100%;
+            background: #FFEB3B;
+            box-shadow: 0 0 5px;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    var ua = navigator.userAgent.toLowerCase();	;
+
+    if( ua.indexOf('android') >= 0 || ua.indexOf('iphone') >= 0 || ua.indexOf('ipad') >= 0 || $(window).width() <= 500 ){
+        $('.viewTit').hide();
+        $('body').css('padding-top', 0);
+    }
+</script>
+
+
+<!---->
+<!--<p th:text="'Hello, ' + ${name} + '!'" ></p>-->
+<hr>
+<!-- 内容编辑区域 -->
+<p style="color:red"> 使用说明：此页面是显示分段，单击某一段，会提示对该段是“插入”，“修改”，还是“删除”，<br>点击“插入”或者“修改”，
+    就会进入编辑框(所有的样式仅仅对段落起作用），图片也可以上传(小于500k）</p>
+
+<hr>
+<hr>
+<div id="article-body"></div>
+<div>
+    <button id="saveBtn" class="btn btn-success center"> 保存</button>
+</div>
+
+<script>
+    // 先获取当前周报内容，确保编辑器显示正常信息
+    var summaryData=new Object();
+    var artEditor={};
+    //创建编辑器
+    createEditor();
+    $.get("../summary/checkWritten?"+new Date().getMilliseconds(),function(data){
+        layer.msg(data.msg);
+        if(data.code!=0){
+
+            if(5000504==data.code){
+                location.href="login";
+            }
+            // alert(data.msg);
+            console.log("暂时无周报");
+        }else{
+
+             summaryData.summaryId=data.data.summaryId;
+             summaryData.content=data.data.content;
+             // $("#article-body").html(data.data.content);
+             console.log(JSON.stringify(summaryData));
+             console.log(JSON.stringify(summaryData['content']));
+             //填充内容感到编辑区域
+             artEditor.append(data.data.content);
+        }
+
+
+    });
+    function createEditor(){
+        /*实例化一个编辑器*/
+         artEditor = new Eleditor({
+            el: '#article-body', /*编辑区域dom对象，也可以是jquery对象*/
+            // upload: {Object}, /*上传配置参数，详情见《进阶-文件上传部分》*/
+            // uploader: {Function}, /*用于替换编辑器自带上传逻辑，upload和uploader参数不能共存！*/
+            toolbars: [
+                'insertText',
+                'editText',
+                'delete',
+                'undo',
+                'cancel'
+            ], /*自定义按钮，详情见《进阶-扩展编辑器部分》*/
+            placeHolder: '周报从这里开始', /*编辑器默认为空时文字*/
+             upload: {
+                 server: '../pic/upload',//后台接收地址
+                 fileSizeLimit: 2,//限制文件上传大小为2M
+                 formName: 'file',//设置文件name,
+                 accept: {//accept一般不用设置
+                     title: 'Images',
+                     extensions: 'gif,jpg,jpeg,bmp,png,webp',
+                     mimeTypes: 'image/gif,image/jpg,image/jpeg,image/bmp,image/png,image/webp'
+                 }
+             }
+        });
+
+        $('#saveBtn').click(function(){
+            var _content = artEditor.getContent();
+            console.log(_content);
+            var content2=artEditor.getContentText();
+            console.log(content2);
+            summaryData['content']=_content;
+            console.log(JSON.stringify(summaryData));
+            $.post("../summary/save",summaryData,function(result){
+                layer.msg(result.data.msg);
+                if(0==result.code){
+                    alert("保存成功！预览界面暂时未做，跳转到周报列表");
+                    location.href="summary_list";
+                    //跳转到预览页面
+                }
+            });
+            /*保存...*/
+        });
+    }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="net.xinqushi.wechat.web.dao.ViewSumDao">
+    <!--不含text类型字段-->
+    <sql id="BASE_SELECT">
+#  SELECT
+#             s.id,
+#             s.time,
+#             s.title,
+#             s.ischeck,
+#             s.recommend,
+#             m.`name`,
+#             u.`name` AS username
+#             FROM
+#             summary AS s
+#             LEFT JOIN member AS m ON s.mid = m.id
+#             LEFT JOIN `user` AS u ON m.uid = u.id
+
+SELECT
+    ss.id as summaryId,
+    ss.time,
+    ss.title,
+    ss.mid as memberId,
+    ss.ischeck as isCheck,
+    ss.recommend,
+    mm.`name`,
+    uu.name as userName
+FROM
+    summary  as ss
+    left JOIN
+     member as mm
+        on ss.mid=mm.id
+    LEFT JOIN  user as uu
+        on uu.id=mm.uid
+
+    </sql>
+    <!--含text类型字段-->
+    <sql id="FULL_SELECT">
+
+SELECT
+    ss.id as summaryId,
+    ss.title ,
+    ss.content,
+    ss.mid as memberId,
+    ss.ischeck as isCheck,
+    ss.recommend,
+    mm.`name`,
+    uu.name as userName
+
+FROM
+    summary  as ss
+    left JOIN
+    member as mm
+        on ss.mid=mm.id
+   LEFT JOIN  user as uu
+           on uu.id=mm.uid
+# ORDER BY summaryId DESC
+# limit 1000
+
+    </sql>
+    <select id="selectViewSummeryAll" resultType="net.xinqushi.wechat.pojo.ViewSum">
+
+        <include refid="BASE_SELECT"></include>
+# 注意周报的pid为0，表示该记录是周报，否则是评论
+          where ss.pid=0
+        <if test="orderByClause!=null">
+             ORDER  BY  #{orderByClause}
+        </if>
+
+    </select>
+    <select id="getViewSummeryById" resultType="net.xinqushi.wechat.pojo.ViewSum">
+
+         <include refid="FULL_SELECT">
+
+         </include>
+                where ss.id=#{id}
+
+    </select>
+<!--模糊查询-->
+    <select id="selectViewSummeryLike" resultType="net.xinqushi.wechat.pojo.ViewSum">
+        <include refid="BASE_SELECT"/>
+
+   <if test="likeField!=null">
+   where  #{likeField} like #{likeValue}
+   </if>
+        <if test="orderByClause!=null">
+            ORDER  BY  ${orderByClause}
+        </if>
+
+    </select>
+    <select id="selectForWeek" resultType="net.xinqushi.wechat.pojo.ViewSum">
+        <include refid="BASE_SELECT">
+        </include>
+
+        WHERE ss.title=#{week}
+        <if test="orderByClause==null">
+            ORDER  BY  ss.mid
+        </if>
+        <if test="orderByClause!=null">
+            ORDER  BY  ${orderByClause}
+        </if>
+
+    </select>
+    <!--根据周报id查找相关评论-->
+    <select id="selectCommentBySummaryId" resultType="net.xinqushi.wechat.pojo.SummaryComment">
+
+        select
+            ss.id commentId,
+            ss.content,
+            ss.time as publishTime,
+            mm.`name` as observerName
+        from
+            summary  ss
+            left JOIN  member mm on mm.id=ss.mid
+        where  ss.pid=${summaryId}
+    </select>
+    <!--发表评论-->
+    <insert id="addComment" parameterType="net.xinqushi.wechat.pojo.ViewSum">
+        insert into
+            summary (mid,pid,time,content)
+        VALUES (#{memberId},#{pId},#{time},#{content})
+
+    </insert>
+    <!--保存周报-->
+    <insert id="saveSummary" parameterType="net.xinqushi.wechat.pojo.ViewSum">
+        insert into
+            summary (mid,pid,time,content,title)
+        VALUES (#{memberId},#{pId},#{time},#{content},#{title})
+    </insert>
+    <!--更新周报-->
+    <update id="updateSummary" parameterType="net.xinqushi.wechat.pojo.ViewSum">
+        update  summary SET
+            <if test="content!=null">
+                content=#{content},
+            </if>
+            <if test="title!=null">
+                title=#{title},
+            </if>
+            ischeck=#{isCheck},
+            recommend=#{recommend}
+
+        WHERE id =#{summaryId}
+
+    </update>
+    <!--根据周报标题和是否推荐 获取周报-->
+    <select id="getSummaryByTitleRecommend" resultType="net.xinqushi.wechat.pojo.ViewSum">
+<include refid="FULL_SELECT"/>
+        where ss.pid=0
+        and ss.title=#{title}
+        <if test="isRecommened!=0">
+            and ss.recommend=#{isRecommened}
+        </if>
+
+    </select>
+    <!--根据审核状态获取周报-->
+    <select id="getSummaryByTitleChecked" resultType="net.xinqushi.wechat.pojo.ViewSum">
+        <include refid="FULL_SELECT"/>
+        where ss.pid=0
+        and ss.title=#{title}
+        <if test="isCheck!=0">
+            and ss.ischeck=#{isCheck}
+        </if>
+    </select>
+    <select id="getByMemberIdAndTitle" resultType="net.xinqushi.wechat.pojo.ViewSum">
+        <include refid="FULL_SELECT">
+        </include>
+        WHERE
+           ss.mid=#{memberId}
+        and ss.title=#{title}
+    </select>
+</mapper>
+

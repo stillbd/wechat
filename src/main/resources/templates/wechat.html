@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>hello</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="http://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
+
+</head>
+<body>
+<!--<p th:text="'Hello, ' + ${name} + '!'" ></p>-->
+这里显示二维码
+<div id="login_container"></div>
+</body>
+<script>
+    var obj = new WxLogin({
+        self_redirect:true,
+        id:"login_container",
+        appid: "wx5271c0fec72093db",
+        scope: "snsapi_login",
+        redirect_uri: "localhost:8080/demo/hello",
+        state: "STATE",
+        style: "",
+        href: ""
+    });
+</script>
+</html>

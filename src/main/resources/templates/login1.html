@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <!--<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />-->
+    <title>login</title>
+
+    <!--<link rel="stylesheet" type="text/css" th:href="@{/css/common.css}" />-->
+
+    <!DOCTYPE HTML>
+    <html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>登录</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+        <!--&lt;!&ndash; jquery &ndash;&gt;-->
+        <!--<script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>-->
+        <!-- bootstrap -->
+        <!--<link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />-->
+        <!--<script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>-->
+        <!-- jquery -->
+        <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+        <!-- bootstrap -->
+        <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <!-- jquery-validator -->
+        <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+        <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+        <!-- layer -->
+        <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+        <!-- md5.js -->
+        <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+        <!-- common.js -->
+        <script type="text/javascript" th:src="@{/js/common.js}"></script>
+
+    </head>
+<body>
+
+
+        <form name="loginForm" id="loginForm" method="post"  style="width:50%; margin:0 auto">
+
+            <h2 style="text-align:center; margin-bottom: 20px">用户登录</h2>
+
+            <div class="form-group">
+                <div class="row">
+                    <label class="form-label col-md-4">账号</label>
+                    <div class="col-md-5">
+                        <input id="loginName" name = "loginName" class="form-control" type="text" placeholder="请输入账号" required="true"  minlength="3" maxlength="11" />
+                    </div>
+                    <div class="col-md-1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <label class="form-label col-md-4">密码</label>
+                    <div class="col-md-5">
+                        <input id="password" name="password" class="form-control" type="password"  placeholder="请输入密码" required="true" minlength="3" maxlength="16" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <button class="btn btn-primary btn-block" type="reset" onclick="reset()">重置</button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary btn-block" type="submit" onclick="login1()">登录</button>
+                </div>
+            </div>
+
+        </form>
+        <hr>
+        <p style="color: #FF4F4F"> 体验账号：888，密码：888</p>
+
+</body>
+<script>
+    //获取url所带参数
+    /*var urlParam = location.search
+    var redirectUrl ="";
+    if (urlParam!=null&&urlParam!=""){
+        var urlParam1 = urlParam.substr(1);
+        var strs = urlParam1.split("=");
+        redirectUrl = strs[1];
+    }*/
+
+    //获取拦截器拦截的请求路径
+    var redirectURL = "";
+    $.get("../util/getredirect",function (data) {
+        redirectURL = data;
+    });
+
+    function login (){
+
+        $("#loginForm").validate({
+            submitHandler:function(form){
+
+                doLogin();
+            }
+        });
+
+    }
+    function doLogin(){
+        // $.post('../user/login',{loginName:$("#loginName").val(),password:$("#password").val()},function(data){
+        //     // alert(data.status);
+        //     if(data.code!=0){
+        //        layer.msg(data.msg);
+        //     }else{
+        //         layer.msg(data.msg);
+        //         location.href="editor";
+        //     }
+        // })
+        g_showLoading();
+        // alert("hello");
+        console.log("hello");
+        $.ajax({
+            url: "../user/login",
+            type: "POST",
+            data:{
+                loginName:$("#loginName").val(),
+                password:$("#password").val(),
+            },
+            success:function(data){
+                layer.closeAll();
+                if(data.code == 0){
+                    layer.msg("登录成功！");
+                    if (redirectURL!=""&&null!=redirectURL) {
+                        window.location.href = redirectURL;
+                    }else{
+                        location.href = "summary_list";
+                    }
+                }else{
+                    layer.msg(data.msg);
+                }
+            },
+            error:function(){
+                layer.closeAll();
+            }
+        });
+    }
+
+
+</script>
+</html>

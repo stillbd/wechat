@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <title>周报列表</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <!--<script type="text/javascript" th:src="@{/js/jquery-2.1.4.js}"></script>-->
+
+    <!-- bootstrap -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- bootstrap-table -->
+    <link href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
+    <!-- 移动设备优先-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/css/jquery-weui.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/css/weui.min.css}" />
+
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+    <style type="text/css">
+        .comments {
+            width:100%;/*自动适应父布局宽度*/
+            overflow:auto;
+            word-break:break-all;
+            /*在ie中解决断行问题(防止自动变为在一行显示，主要解决ie兼容问题，ie8中当设宽度为100%时，文本域类容超过一行时，
+            当我们双击文本内容就会自动变为一行显示，所以只能用ie的专有断行属性“word-break或word-wrap”控制其断行)*/
+        }
+    </style>
+</head>
+<body>
+<!--<p th:text="'Hello, ' + ${name} + '!'" ></p>-->
+<!--<button onclick="showData()"> 查询周报</button>-->
+<div>
+    <!--<table id="tableList" class="table table-striped"></table>-->
+</div>
+
+<input type="hidden" id="su-pagenum" >
+<input type="hidden" id="su-operation" >
+<div>
+    <span style="font-size: x-small">周报：</span><span id="su-title" style="font-size: x-small"></span>
+    <br/>
+    <button type="button" class="weui-btn weui-btn_mini weui-btn_primary change-title" lang="previousWeek">上一周</button>
+    <button type="button" class="weui-btn weui-btn_mini weui-btn_primary change-title" lang="currentWeek">当前周</button>
+    <button type="button" class="weui-btn weui-btn_mini weui-btn_primary change-title" lang="nextWeek">下一周</button>
+    <button type="button" class="weui-btn weui-btn_mini weui-btn_primary editSummary">编写周报</button>
+    <!--<span><button class="change-title btn btn-success" lang="previousWeek"> 上一周</button></span>-->
+    <!--<br />-->
+    <!--&nbsp;<span><button class="change-title btn btn-success" lang="currentWeek">当前周</button></span>-->
+    <!--<br />-->
+    <!--&nbsp;<span><button class="change-title btn btn-success" lang="nextWeek" > 下一周</button></span>-->
+    <!--<button onclick="getHtml()">测试获取网页</button>-->
+    <table  id="tableList" data-pagination="true"  data-toggle="table" >
+
+   </table>
+</div>
+
+<script type="text/javascript" th:src="@{/js/fastclick.js}"></script>
+<script>
+    $(function() {
+        FastClick.attach(document.body);
+    });
+</script>
+<script type="text/javascript" th:src="@{/js/jquery-weui.js}"></script>
+<script>
+    $.ajaxSetup({
+        async:false
+    });
+
+    var pageNum=1;
+    // if($("#su-pagenum").val()!=null && $("#su-pagenum").val()!="") {
+    //     pageNum1 = $("#su-pagenum").val();
+    // }
+
+    //方法一：获取详情页转过来时url中传递的页码，只能实现关闭按钮
+    // var urlParam = location.search.substr(1);
+    // var strs = urlParam.split("=");
+    // pageNum1 = strs[1];
+    // console.log("urlparam-------------"+pageNum1);
+
+    //方法二：直接获取session中的pageNum，可以实现返回按钮
+    $.get("../util/getpagenum",function (data) {
+        pageNum = data;
+    });
+
+
+    $(".change-title").each(function () {
+        $(this).click(function(){
+            // location.reload();
+            $("#su-operation").val(this.lang);
+            pageNum = 1;
+            showData();
+            $("#su-operation").val("");
+            location.reload();
+        });
+    });
+
+    $(".editSummary").click(function () {
+        location.href="qediter1";
+    });
+
+    // $(".su-detail").click(function(){
+    //     alert("相查看详情!!!");
+    // })
+    //通过bootstrap Table方法refresh重新加载数据
+    function showData() {
+        $('#tableList').bootstrapTable('refresh');
+    }
+    //周报分页
+    //官方使用方法的语法：<code>$('#table').bootstrapTable('method', parameter)</code>
+    $('#tableList').bootstrapTable({
+        url: '../summary/list' ,//服务器数据的加载地址
+        columns: [
+            {
+                field: 'summaryId',
+                title: '周报id',
+                visible:false
+            },
+            {
+                field: 'userName',
+                title: '会员编号',
+                striped : true,
+            },
+
+            {
+                field: 'time',
+                title: '提交时间',
+                striped : true,
+            }, {
+                field: 'name',
+                title: '姓名',
+                striped : true,
+            }],//页面需要展示的列，后端交互对象的属性
+        // search:true,
+        // searchOnEnterKey:true,
+        showToggle:true,
+        // cardView:true,
+        pagination: true,  //开启分页
+        sidePagination: 'server',//服务器端分页
+        pageNumber: pageNum,//默认加载页
+        pageSize: 10,//每页数据
+        pageList: [10,20,30],//可选的每页数据
+        showRefresh: true,//是否显示刷新按钮
+        uniqueId: "summaryId",
+        queryParamsType:'',
+        //queryParamsType的默认值为 'limit' ,在默认情况下 传给服务端的参数为：offset,limit,sort
+        //设置为 ''  在这种情况下传给服务器的参数为：pageSize,pageNumber */
+        queryParams: function (params) {
+            console.log("pageNum:---------------------------------------------"+params.pageNumber);
+            console.log("pageNum1:---------------------------------------------"+pageNum);
+
+            return {
+                pageSize: params.pageSize,
+                pageNumber: params.pageNumber,
+                search:params.search,
+                op:$("#su-operation").val(),
+            }
+        },//请求服务器数据时的参数
+
+        responseHandler:function(res) {
+            //在ajax获取到数据，渲染表格之前，修改数据源
+            var nres = [];
+            nres.push({total: res.pageInfo.total, rows: res.pageInfo.list});
+            $("#su-title").html(res.title);
+            return nres[0];
+        },
+        //单击一行，获取该行数据
+        onClickRow: function (row) {
+            console.log("click id:" + row.summaryId);
+            location.href="../summary/detail/get/"+row.summaryId;
+        }
+    });
+
+</script>
+</body>
+<!--<script src="../../common.js"></script>-->
+</html>

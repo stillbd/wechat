@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>单击复制</title>
+</head>
+<body>
+ <input onclick="oCopy(this)" value="你好.要copy的内容!">
+ <script language="javascript">
+    function oCopy(obj){
+         obj.select();
+        var js=obj.createTextRange();
+         js.execCommand("Copy")
+         alert("复制成功!");
+         }
+     </script>
+</body>
+</html>

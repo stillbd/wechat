@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="http://static.135editor.com/js/jquery/jquery.min.js" type="text/javascript"></script>
+    <!--将js文件下载到应用服务器的ueditor目录，调用自己服务器的文件-->
+    <script type="text/javascript" src="/下载的百度编辑器目录/ueditor/ueditor.config.js"></script>
+    <script src="http://static.135editor.com/js/ueditor/ueditor.all.min.js"></script>
+    <script src="http://static.135editor.com/open/v1/a92d301d77.js" type="text/javascript"></script>
+    <link href="http://static.135editor.com/open/v1/96619a5672.css"  rel="stylesheet" type="text/css" />
+</head>
+<body>
+<!--将编辑器的区域放入form表单中，设置好name值，提交表单时，编辑器内部的内容会自动提交-->
+<div style="width:800px;margin:0 auto;" >
+    <form action="" method="post">
+        <div style="text-align:center;">
+
+            <input type="submit" style="padding:10px 20px;" value="提交" onclick="alert($(this.form).serialize());return true;">
+            </div>
+            </form>
+            </div>
+</body>
+<!--<script id="WxMsgContent" name="content" style="width:800px;" type="text/plain">-->
+
+
+<!--</script>-->
+</html>

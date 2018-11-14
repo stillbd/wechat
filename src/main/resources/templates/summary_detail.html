@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0,viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+
+    <title>阅读周报</title>
+
+    <!-- jquery -->
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+
+    <link type="text/css" rel="stylesheet" th:href="@{/css/admiration.css}"/>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/css/summary_detail.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/weui.min.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/jquery-weui.css}">
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+    <!--[if lt IE 9]>
+    <link rel="stylesheet" type="text/css"
+          href="//res.wx.qq.com/mmbizwap/zh_CN/htmledition/style/page/appmsg_new/pc3ec991.css">
+    <![endif]-->
+    <script type="text/javascript">
+        $(function () {
+            if ($("#isWx").val()=="0"){
+                //非微信端打开
+                $("#dianzan").hide();
+            }else {
+                //微信端打开
+
+                //页面加载时初始化点赞按钮
+                $.get("../../../visit/getAdmiration",{summaryId:$("#su-id").val()},function (data) {
+                    if(1==data.data){
+                        // $("#doAdmiration").html("<img style='width: 20px;height: 20px' src='/Images/yizan.png' id=\"praise-img\" class=\"animation\" />");
+                        $("#doAdmiration").html("<img style='width: 20px;height: 20px' src='http://pdx11avb0.bkt.clouddn.com/yizan.png' id='praise-img' class='animation' />")
+                        $("#admirationNum").addClass("hover");
+                        $("#add-num").html("<em class='add-animation'>+1</em>");
+                        $(".add-animation").addClass("hover")
+                    }
+                });
+                $("#doAdmiration").click(function () {
+                    var text_box = $("#add-num");
+                    var praise_txt = $("#admirationNum");
+                    var num=parseInt(praise_txt.text());
+                   $.get("../../../visit/updateAdmiration",{summaryId:$("#su-id").val()},function (data) {
+                       if (0==data.code){
+                           //点赞或取消点赞请求成功
+                           if(data.data==0){
+                               //取消点赞成功
+                               $("#doAdmiration").html("<img style='width: 20px;height: 20px' src='http://tp.xinqushi.net/zan.png' id='praise-img' class='animation' />");
+                               text_box.show().html("<em class='add-animation'>-1</em>");
+                               $(".add-animation").removeClass("hover");
+                               num -=1;
+                               praise_txt.text(num);
+                           }else if (data.data==1){
+                               //点赞成功
+                               $("#doAdmiration").html("<img style='width: 20px;height: 20px' src='http://tp.xinqushi.net/yizan.png' id='praise-img' class='animation' />");
+                               text_box.show().html("<em class='add-animation'>+1</em>");
+                               $(".add-animation").addClass("hover");
+                               num +=1;
+                               praise_txt.text(num);
+                           }
+                       }else{
+                           //请求失败
+                           alert(data.msg);
+                       }
+                   });
+                });
+            }
+            /*function showReadAndAdmiration() {
+                $.get("../../../visit/",{summaryId:$("#su-id").val()},function () {
+                    
+                });
+            }*/
+        })
+    </script>
+</head>
+<body id="activity-detail" class="zh_CN mm_appmsg  appmsg_skin_default appmsg_style_default">
+<input type="hidden" id="isWx" th:value="${isWx}">
+<!-- 微信公众号文章扒的页面 -->
+<!-- 页面内容start -->
+<div id="js_article" class="rich_media">
+    <div id="js_top_ad_area" class="top_banner"></div>
+    <div class="rich_media_inner">
+        <div id="page-content" class="rich_media_area_primary">
+            <div class="rich_media_area_primary_inner">
+                <div id="img-content">
+                    <h2 class="rich_media_title" id="activity-name">
+                        周报内容
+                    </h2>
+                    <input id="su-id" type="hidden" th:value="${summary.summaryId}">
+                    <div id="meta_content" class="rich_media_meta_list">
+                        <span id="copyright_logo" class="rich_media_meta rich_media_meta_text meta_tag_text">作者：</span>
+                        <span class="rich_media_meta rich_media_meta_text" id="su_author" th:text="${summary.name}">
+                        </span>
+                        <span class="rich_media_meta rich_media_meta_nickname" id="profileBt">
+                            <a href="javascript:;" id="js_name">
+                                IT群英汇
+                            </a>
+                        </span>
+
+                        <span class="rich_media_meta rich_media_meta_text" id="su_title" th:text="${summary.title}"></span>
+                    </div>
+                    <div id="su_content" th:utext="${summary.content}"></div>
+                    <div class="weui-cells__title">评论</div>
+                    <div class="weui-cells weui-cells_form">
+                        <div class="weui-cell">
+                            <div class="weui-cell__bd">
+                                <textarea id="comment-editor" class="weui-textarea" placeholder="请输入评论" rows="3"></textarea>
+                                <!--<div class="weui-textarea-counter"><span>0</span>/1000</div>-->
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="weui-btn weui-btn_mini weui-btn_warn back_to_list">关闭</button>
+                    <button type="button" class="weui-btn weui-btn_mini weui-btn_primary comment-add">发表评论</button>
+                    <button type="button" style="alignment: right" class="weui-btn weui-btn_mini weui-btn_primary comment-refresh">刷新评论</button>
+                    <div id="comment-list" class="text-info" style="color: #10aeff"></div>
+                    <br>
+                    <div id="dianzan">
+                        <span style="color: #9b969d">
+                            <span>阅读数:</span><span th:text="${summary.readNum}"></span>
+                        </span>
+                        <span style="float: right">
+                            <span id="admiration">
+                                <span id="doAdmiration" style="cursor: pointer"><img style="width: 20px;height: 20px" th:src="@{/Images/zan.png}" id="praise-img" /></span>
+                                <span id="add-num"><em>+1</em></span>
+                            </span>
+                            <span id="admirationNum" style="color: #9b969d" th:text="${summary.admirationNum}"></span>
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript" th:src="@{/js/fastclick.js}"></script>
+<script>
+    $(function() {
+        FastClick.attach(document.body);
+    });
+</script>
+<script type="text/javascript" th:src="@{/js/jquery-weui.js}"></script>
+</body>
+<script type="text/javascript">
+    $(function(){
+        $('#comment-list').html("搜索评论中。。。。。");
+        setTimeout(function() {
+            // alert("启用延时函数");
+            showComments();}, 1000);
+        //有这个请求，返回当前页就有效
+        $.get("../../../util/getpagenum",function (data) {
+        });
+    })
+
+    function showComments(){
+        $.get('../../../comment/list',{  summaryId:$("#su-id").val()},function(result){
+            var listDiv=$('#comment-list');
+            if(0==result.code){
+                //将评论显示出来
+                var dataList=result.data;
+                var rowStr='<span>评论共有<span style="color: #ff3a26;font-family: sansserif;">'+dataList.length+'</span>条</span><hr>'
+                rowStr+='<hr><span>';
+                dataList.forEach(function (item){
+                    rowStr+='<span>'+item.publishTime+'</span>&nbsp<span>'+item.observerName+":"+'</span>'+'<br><span>'+'<texteara readonly>'+item.content+'</texteara>'+'</span><br><hr>';
+
+                });
+
+                rowStr+='</span>';
+                console.log(rowStr);
+                listDiv.html(rowStr);
+            }else{
+                listDiv.html("暂无评论哦，期待你的评论◑ω◐ ！")
+                // layer.msg(result.msg);
+            }
+        });
+    }
+    //处理发布评论
+    $(".comment-add").click(function(){
+        var data={pId:$("#su-id").val(),content:$("#comment-editor").val()};
+
+        if(0==$.trim(data).length){
+            layer.msg("评论内容不能为空！");
+            return ;
+        }
+        $.post('../../../comment/add',data,function(result){
+            if(result.code==0){
+                layer.msg("评论发表成功");
+            }else{
+                layer.msg(result.msg);
+            }
+        });
+    });
+
+    //刷新评论
+    $(".comment-refresh").click(function(){
+        g_showLoading();
+        showComments();
+        layer.closeAll();
+    });
+
+    //返回列表
+    $(".back_to_list").click(function () {
+        window.history.back();
+        //location.href="../../../page/summary_list?pageNum="+pageNum;
+    });
+    var a = 0;
+    //弹出二维码
+    $("#js_name").click(function () {
+        layer.tips("<img alt='' src='http://tp.xinqushi.net/qrcode_for_gh_83e47ec774ba_258.jpg' style='width:100px;height:100px;'>","#js_name",{
+            tips:2,
+            time:0
+        })
+    });
+    document.body.onclick = function (e) {
+
+        if (a==1) {
+            layer.close(layer.index);
+            a=0;
+        }else{
+            a=1;
+        }
+    }
+
+</script>
+
+</html>
